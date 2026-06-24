@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trademark Stamp Generator</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);font-family:Inter,Arial,sans-serif;color:#fff}
+  header{background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 28px;display:flex;align-items:center;gap:14px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#e74c3c,#c0392b);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .logo-title{font-weight:800;font-size:20px;letter-spacing:1px}
+  .logo-sub{color:#aaa;font-size:12px;margin-top:2px}
+  .main{max-width:1100px;margin:0 auto;padding:24px 16px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:700px){.main{grid-template-columns:1fr}}
+  .card{background:rgba(255,255,255,0.05);border-radius:14px;padding:18px 20px;border:1px solid rgba(255,255,255,0.08);margin-bottom:18px}
+  .card-title{color:#e74c3c;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px}
+  label{color:#ccc;font-size:13px;display:block;margin-bottom:5px}
+  input[type=text]{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:14px;outline:none;margin-bottom:12px;transition:border 0.2s}
+  input[type=text]:focus{border-color:#e74c3c}
+  input[type=text].big{font-size:18px;font-weight:900;letter-spacing:4px}
+  input[type=range]{width:100%;margin-bottom:10px;accent-color:#e74c3c}
+  .row-label{display:flex;justify-content:space-between;margin-bottom:4px}
+  .row-label span:last-child{color:#fff;font-weight:600}
+  .colors{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .color-btn{width:30px;height:30px;border-radius:8px;border:3px solid transparent;cursor:pointer;transition:border 0.15s}
+  .color-btn.active{border-color:#fff!important}
+  input[type=color]{width:30px;height:30px;border-radius:8px;border:2px solid rgba(255,255,255,0.2);padding:2px;cursor:pointer;background:transparent}
+  .pos-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .pos-btn{padding:6px 11px;border-radius:7px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#ccc;font-size:12px;cursor:pointer;transition:all 0.15s}
+  .pos-btn.active{border:2px solid #e74c3c!important;background:rgba(231,76,60,0.18);color:#e74c3c;font-weight:700}
+  .dropzone{border:2px dashed rgba(255,255,255,0.2);border-radius:10px;padding:26px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.03);transition:all 0.2s}
+  .dropzone.drag{border-color:#e74c3c;background:rgba(231,76,60,0.07)}
+  .dropzone-icon{font-size:30px;margin-bottom:8px}
+  .dropzone-title{font-size:14px;font-weight:600}
+  .dropzone-sub{color:#888;font-size:12px;margin-top:4px}
+  .file-list{margin-top:10px}
+  .file-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px}
+  .file-item span.name{color:#ddd;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .file-item span.size{color:#888;font-size:11px}
+  .file-item span.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700}
+  .tag-pdf{background:rgba(231,76,60,0.2);color:#e74c3c}
+  .tag-img{background:rgba(52,152,219,0.2);color:#3498db}
+  .error-box{color:#e74c3c;font-size:13px;margin-top:10px;padding:8px 12px;background:rgba(231,76,60,0.12);border-radius:7px;display:none}
+  .apply-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;transition:opacity 0.2s;margin-bottom:10px}
+  .apply-btn:disabled{background:rgba(255,255,255,0.08);color:#666;cursor:not-allowed}
+  .progress-bar{background:rgba(255,255,255,0.06);border-radius:8px;height:8px;overflow:hidden;margin-bottom:12px;display:none}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#e74c3c,#f39c12);border-radius:8px;transition:width 0.3s;width:0%}
+  canvas{width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.1);display:block}
+  .preview-note{color:#777;font-size:11px;margin-top:8px;text-align:center}
+  .dl-card{background:rgba(255,255,255,0.05);border-radius:14px;padding:18px 20px;border:1px solid rgba(39,174,96,0.3);margin-bottom:18px;display:none}
+  .dl-card.show{display:block}
+  .dl-title{color:#27ae60;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+  .dl-link{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(39,174,96,0.1);border-radius:9px;margin-bottom:8px;text-decoration:none;border:1px solid rgba(39,174,96,0.2);cursor:pointer}
+  .dl-link span.dl-name{color:#ddd;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dl-link span.dl-label{color:#27ae60;font-size:12px;font-weight:700;white-space:nowrap}
+  .dl-type{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px}
+  .dl-type-pdf{background:rgba(231,76,60,0.2);color:#e74c3c}
+  .dl-type-img{background:rgba(52,152,219,0.2);color:#3498db}
+  .how-card{background:rgba(255,255,255,0.03);border-radius:14px;padding:16px 20px;border:1px solid rgba(255,255,255,0.06)}
+  .how-title{color:#888;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+  .how-item{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+  .how-num{background:rgba(231,76,60,0.2);color:#e74c3c;border-radius:5px;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+  .how-text{color:#aaa;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔏</div>
+  <div>
+    <div class="logo-title">Trademark Stamp Generator</div>
+    <div class="logo-sub">PDF in → PDF out &nbsp;|&nbsp; Image in → Image out &nbsp;|&nbsp; Up to 100MB</div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- LEFT -->
+  <div>
+    <div class="card">
+      <div class="card-title">📝 Stamp Text</div>
+      <label>Short Form — बड़ा Text (जैसे: PAID, VERIFIED, APPROVED)</label>
+      <input type="text" id="shortText" class="big" placeholder="अपना text यहाँ लिखें..." maxlength="15" oninput="this.value=this.value.toUpperCase();drawPreview()"/>
+      <label>Full Form — नीचे छोटी line</label>
+      <input type="text" id="fullText" placeholder="जैसे: Payment Verified & Approved" oninput="drawPreview()"/>
+      <label>Bottom Label — Page के नीचे automatically (SBP)</label>
+      <input type="text" id="sbpText" placeholder="जैसे: SBP" maxlength="25" oninput="this.value=this.value.toUpperCase();drawPreview()"/>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎨 Style</div>
+      <label>Color</label>
+      <div class="colors">
+        <div class="color-btn active" style="background:#cc1111" data-color="#cc1111" onclick="selectColor(this)"></div>
+        <div class="color-btn" style="background:#1144cc" data-color="#1144cc" onclick="selectColor(this)"></div>
+        <div class="color-btn" style="background:#127a2e" data-color="#127a2e" onclick="selectColor(this)"></div>
+        <div class="color-btn" style="background:#111111" data-color="#111111" onclick="selectColor(this)"></div>
+        <div class="color-btn" style="background:#7b2ab8" data-color="#7b2ab8" onclick="selectColor(this)"></div>
+        <div class="color-btn" style="background:#c96a00" data-color="#c96a00" onclick="selectColor(this)"></div>
+        <input type="color" id="customColor" value="#cc1111" title="Custom color" oninput="stampColor=this.value;drawPreview()"/>
+      </div>
+      <div class="row-label"><label>Opacity</label><span id="opacityVal">82%</span></div>
+      <input type="range" id="opacity" min="20" max="100" value="82" oninput="document.getElementById('opacityVal').textContent=this.value+'%';drawPreview()"/>
+      <div class="row-label"><label>Rotation</label><span id="rotateVal">-18°</span></div>
+      <input type="range" id="rotate" min="-45" max="45" value="-18" oninput="document.getElementById('rotateVal').textContent=this.value+'°';drawPreview()"/>
+      <div class="row-label"><label>Size</label><span id="scaleVal">1.0x</span></div>
+      <input type="range" id="scale" min="5" max="25" step="1" value="10" oninput="document.getElementById('scaleVal').textContent=(this.value/10).toFixed(1)+'x';drawPreview()"/>
+      <label style="margin-bottom:8px">Position</label>
+      <div class="pos-btns">
+        <button class="pos-btn" data-pos="top-left" onclick="selectPos(this)">↖ Top Left</button>
+        <button class="pos-btn" data-pos="top-right" onclick="selectPos(this)">↗ Top Right</button>
+        <button class="pos-btn" data-pos="center" onclick="selectPos(this)">⊙ Center</button>
+        <button class="pos-btn" data-pos="bottom-left" onclick="selectPos(this)">↙ Bottom Left</button>
+        <button class="pos-btn active" data-pos="bottom-right" onclick="selectPos(this)">↘ Bottom Right</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📂 Upload Files</div>
+      <div class="dropzone" id="dropzone"
+        onclick="document.getElementById('fileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <div class="dropzone-icon">📄</div>
+        <div class="dropzone-title">Click या Drag & Drop करें</div>
+        <div class="dropzone-sub">PDF → PDF मिलेगा &nbsp;|&nbsp; Image → Image मिलेगी &nbsp;|&nbsp; Max 100MB</div>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,image/*" multiple style="display:none" onchange="handleFiles(this.files)"/>
+      <div class="file-list" id="fileList"></div>
+      <div class="error-box" id="errorBox"></div>
+    </div>
+
+    <button class="apply-btn" id="applyBtn" onclick="processFiles()" disabled>🔏 Apply Trademark Stamp</button>
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div>
+    <div class="card">
+      <div class="card-title">👁️ Live Preview</div>
+      <canvas id="previewCanvas" width="440" height="320"></canvas>
+      <div class="preview-note">↑ Approximate preview — actual output may vary by page size</div>
+    </div>
+
+    <div class="dl-card" id="dlCard">
+      <div class="dl-title">✅ Download Stamped Files</div>
+      <div id="dlLinks"></div>
+    </div>
+
+    <div class="how-card">
+      <div class="how-title">📖 How to Use</div>
+      <div class="how-item"><div class="how-num">1</div><div class="how-text">Short form लिखें — जो भी stamp text चाहिए (खाली field, खुद type करें)</div></div>
+      <div class="how-item"><div class="how-num">2</div><div class="how-text">Full form डालें — stamp के नीचे छोटी line में दिखेगा</div></div>
+      <div class="how-item"><div class="how-num">3</div><div class="how-text">Bottom label set करें — page के नीचे automatically SBP | Page X</div></div>
+      <div class="how-item"><div class="how-num">4</div><div class="how-text">Style customize करें — color, opacity, rotation, size, position</div></div>
+      <div class="how-item"><div class="how-num">5</div><div class="how-text">PDF upload करो → PDF मिलेगा &nbsp;|&nbsp; Image upload करो → वही Image format मिलेगा</div></div>
+      <div class="how-item"><div class="how-num">6</div><div class="how-text">Apply button दबाएं → Download करें ✅</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let stampColor = "#cc1111";
+let stampPos   = "bottom-right";
+let selectedFiles = [];
+
+// ── Helpers ────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  return {r,g,b};
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  stampColor = el.dataset.color;
+  document.getElementById('customColor').value = stampColor;
+  drawPreview();
+}
+function selectPos(el) {
+  document.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  stampPos = el.dataset.pos;
+  drawPreview();
+}
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = "⚠️ " + msg;
+  el.style.display = 'block';
+}
+function hideError() { document.getElementById('errorBox').style.display='none'; }
+
+function getScale() { return document.getElementById('scale').value / 10; }
+function getOpacity() { return document.getElementById('opacity').value / 100; }
+function getRotate() { return Number(document.getElementById('rotate').value); }
+
+function getStampXY(w, h, scale) {
+  const sw = 260*scale, sh = 100*scale;
+  if (stampPos==="center")       return [w/2, h/2];
+  if (stampPos==="bottom-right") return [w - sw/2 - 30, h - sh/2 - 50];
+  if (stampPos==="top-right")    return [sw/2 + 30,     sh/2 + 30];  // fix: was wrong
+  if (stampPos==="bottom-left")  return [sw/2 + 30,     h - sh/2 - 50];
+  if (stampPos==="top-left")     return [sw/2 + 30,     sh/2 + 30];
+  return [w/2, h/2];
+}
+// fix top-right properly
+function getStampXYFixed(w, h, scale) {
+  const sw = 260*scale, sh = 100*scale;
+  if (stampPos==="center")       return [w/2,              h/2];
+  if (stampPos==="bottom-right") return [w - sw/2 - 30,    h - sh/2 - 50];
+  if (stampPos==="top-right")    return [w - sw/2 - 30,    sh/2 + 30];
+  if (stampPos==="bottom-left")  return [sw/2 + 30,        h - sh/2 - 50];
+  if (stampPos==="top-left")     return [sw/2 + 30,        sh/2 + 30];
+  return [w/2, h/2];
+}
+
+// ── Canvas stamp drawing ───────────────────────────────
+function drawStampOnCanvas(ctx, x, y, shortText, fullText, color, opacity, rotateDeg, scale) {
+  if (!shortText) return;
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.translate(x, y);
+  ctx.rotate((rotateDeg * Math.PI) / 180);
+
+  const fontSize    = Math.round(56 * scale);
+  const subFontSize = Math.round(15 * scale);
+  const pad         = Math.round(18 * scale);
+  const borderW     = Math.round(5  * scale);
+  const cornerR     = Math.round(10 * scale);
+
+  ctx.font = `900 ${fontSize}px 'Arial Black',Arial,sans-serif`;
+  const mainW = ctx.measureText(shortText).width;
+  ctx.font = `bold ${subFontSize}px Arial,sans-serif`;
+  const subW = fullText ? ctx.measureText(fullText).width : 0;
+
+  const boxW = Math.max(mainW, subW) + pad * 2.5;
+  const boxH = fontSize + (fullText ? subFontSize + pad*0.8 : 0) + pad * 2.2;
+  const bx = -boxW/2, by = -boxH/2;
+
+  // border
+  ctx.beginPath();
+  ctx.moveTo(bx+cornerR,by);
+  ctx.lineTo(bx+boxW-cornerR,by);  ctx.quadraticCurveTo(bx+boxW,by,bx+boxW,by+cornerR);
+  ctx.lineTo(bx+boxW,by+boxH-cornerR); ctx.quadraticCurveTo(bx+boxW,by+boxH,bx+boxW-cornerR,by+boxH);
+  ctx.lineTo(bx+cornerR,by+boxH); ctx.quadraticCurveTo(bx,by+boxH,bx,by+boxH-cornerR);
+  ctx.lineTo(bx,by+cornerR); ctx.quadraticCurveTo(bx,by,bx+cornerR,by);
+  ctx.closePath();
+  ctx.strokeStyle = color; ctx.lineWidth = borderW; ctx.stroke();
+
+  // main text
+  ctx.font = `900 ${fontSize}px 'Arial Black',Arial,sans-serif`;
+  ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  ctx.fillText(shortText, 0, by + pad + fontSize - 4);
+
+  // divider + full form
+  if (fullText) {
+    const divY = by + pad + fontSize + Math.round(6*scale);
+    ctx.beginPath(); ctx.moveTo(bx+pad,divY); ctx.lineTo(bx+boxW-pad,divY);
+    ctx.strokeStyle = color; ctx.lineWidth = Math.round(1.5*scale); ctx.stroke();
+    ctx.font = `bold ${subFontSize}px Arial,sans-serif`;
+    ctx.fillText(fullText, 0, divY + subFontSize + Math.round(4*scale));
+  }
+  ctx.restore();
+}
+
+function drawSBPOnCanvas(ctx, cw, ch, sbpText, color, pageNum) {
+  if (!sbpText) return;
+  ctx.save();
+  ctx.font = "bold 13px Arial,sans-serif";
+  ctx.fillStyle = color; ctx.globalAlpha = 0.85;
+  ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+  ctx.fillText(pageNum!=null ? `${sbpText}  |  Page ${pageNum}` : sbpText, cw-18, ch-10);
+  ctx.restore();
+}
+
+// ── Live preview ───────────────────────────────────────
+function drawPreview() {
+  const canvas = document.getElementById('previewCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#f8f8f8"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#ddd"; ctx.lineWidth=1;
+  for(let y=30;y<canvas.height-20;y+=22){ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(canvas.width-20,y);ctx.stroke();}
+
+  const s  = getScale()*0.7;
+  const [sx,sy] = getStampXYFixed(canvas.width, canvas.height, s);
+  const shortText = document.getElementById('shortText').value.trim();
+  const fullText  = document.getElementById('fullText').value.trim();
+  const sbpText   = document.getElementById('sbpText').value.trim();
+  drawStampOnCanvas(ctx, sx, sy, shortText||"STAMP", fullText, stampColor, getOpacity(), getRotate(), s);
+  drawSBPOnCanvas(ctx, canvas.width, canvas.height, sbpText||"SBP", stampColor, 1);
+}
+
+// ── File handling ──────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+function handleFiles(files) {
+  hideError();
+  document.getElementById('dlCard').classList.remove('show');
+  document.getElementById('dlLinks').innerHTML='';
+  selectedFiles=[];
+  const listEl=document.getElementById('fileList');
+  listEl.innerHTML='';
+  for(const f of files){
+    const isPDF=f.type==="application/pdf"||f.name.toLowerCase().endsWith(".pdf");
+    const isImg=f.type.startsWith("image/");
+    if(!isPDF&&!isImg){showError("सिर्फ PDF और Image files supported हैं।");continue;}
+    if(f.size>100*1024*1024){showError(`"${f.name}" 100MB से बड़ी है।`);continue;}
+    selectedFiles.push(f);
+    const tag = isPDF
+      ? `<span class="tag tag-pdf">PDF</span>`
+      : `<span class="tag tag-img">${f.name.split('.').pop().toUpperCase()}</span>`;
+    listEl.innerHTML+=`<div class="file-item"><span>${isPDF?"📋":"🖼️"}</span><span class="name">${f.name}</span>${tag}<span class="size">${(f.size/1024/1024).toFixed(1)} MB</span></div>`;
+  }
+  document.getElementById('applyBtn').disabled=selectedFiles.length===0;
+}
+
+// ── Loaders ────────────────────────────────────────────
+function loadImg(src){
+  return new Promise((res,rej)=>{
+    const img=new Image(); img.crossOrigin="anonymous";
+    img.onload=()=>res(img); img.onerror=rej; img.src=src;
+  });
+}
+
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return;}
+    const s=document.createElement('script');
+    s.src=src; s.onload=res; s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function loadPDFJS(){
+  if(!window.pdfjsLib){
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc=
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+  return window.pdfjsLib;
+}
+
+async function loadPdfLib(){
+  if(!window.PDFLib){
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js");
+  }
+  return window.PDFLib;
+}
+
+// ── Stamp image file → return PNG/JPG blob ─────────────
+async function stampImageFile(file) {
+  const url = URL.createObjectURL(file);
+  const img = await loadImg(url);
+  URL.revokeObjectURL(url);
+  const canvas = document.createElement("canvas");
+  canvas.width  = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+
+  const scale = getScale();
+  const [sx,sy] = getStampXYFixed(canvas.width, canvas.height, scale);
+  const shortText = document.getElementById('shortText').value.trim();
+  const fullText  = document.getElementById('fullText').value.trim();
+  const sbpText   = document.getElementById('sbpText').value.trim();
+
+  drawStampOnCanvas(ctx, sx, sy, shortText, fullText, stampColor, getOpacity(), getRotate(), scale);
+  drawSBPOnCanvas(ctx, canvas.width, canvas.height, sbpText, stampColor, null);
+
+  // preserve original format: jpeg if jpg/jpeg, else png
+  const isJpeg = /\.(jpe?g)$/i.test(file.name);
+  const mimeOut = isJpeg ? "image/jpeg" : "image/png";
+  const extOut  = isJpeg ? "jpg" : file.name.split('.').pop() || "png";
+
+  return new Promise(res => canvas.toBlob(res, mimeOut, 0.95)).then(blob=>{
+    return { blob, ext: extOut, mime: mimeOut };
+  });
+}
+
+// ── Stamp PDF → return PDF blob using pdf-lib ──────────
+async function stampPdfFile(file) {
+  const [pdfjsLib, PDFLib] = await Promise.all([loadPDFJS(), loadPdfLib()]);
+  const arrayBuffer = await file.arrayBuffer();
+
+  // Load with pdf-lib for writing
+  const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+  const pages  = pdfDoc.getPages();
+
+  // For each page: render with pdfjs → canvas → embed as PNG overlay
+  const pdfBytes = new Uint8Array(arrayBuffer);
+  const pdfJsDoc = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+
+  const shortText = document.getElementById('shortText').value.trim();
+  const fullText  = document.getElementById('fullText').value.trim();
+  const sbpText   = document.getElementById('sbpText').value.trim();
+  const opacity   = getOpacity();
+  const rotate    = getRotate();
+  const scale     = getScale();
+  const rgb       = hexToRgb(stampColor);
+
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const { width: pw, height: ph } = page.getSize();
+
+    // Render that page to canvas (at 2x for quality)
+    const renderScale = 2;
+    const pjsPage = await pdfJsDoc.getPage(i+1);
+    const vp = pjsPage.getViewport({ scale: renderScale });
+    const canvas = document.createElement("canvas");
+    canvas.width = vp.width; canvas.height = vp.height;
+    const ctx = canvas.getContext("2d");
+    await pjsPage.render({ canvasContext: ctx, viewport: vp }).promise;
+
+    // Draw stamp on canvas
+    const canvasScale = scale * renderScale;
+    const [sx,sy] = getStampXYFixed(canvas.width, canvas.height, canvasScale);
+    drawStampOnCanvas(ctx, sx, sy, shortText, fullText, stampColor, opacity, rotate, canvasScale);
+    drawSBPOnCanvas(ctx, canvas.width, canvas.height, sbpText, stampColor, i+1);
+
+    // Convert canvas to PNG and embed into the PDF page
+    const pngDataUrl = canvas.toDataURL("image/png");
+    const pngBase64  = pngDataUrl.split(",")[1];
+    const pngBytes   = Uint8Array.from(atob(pngBase64), c=>c.charCodeAt(0));
+    const pngImage   = await pdfDoc.embedPng(pngBytes);
+
+    // Replace page content: draw the stamped image as full-page overlay
+    // We embed the PNG as a full-page image (this replaces visual content)
+    page.drawImage(pngImage, {
+      x: 0, y: 0,
+      width: pw, height: ph,
+      opacity: 1,
+    });
+  }
+
+  const outBytes = await pdfDoc.save();
+  return { blob: new Blob([outBytes], { type: "application/pdf" }), ext: "pdf", mime: "application/pdf" };
+}
+
+// ── Main process ───────────────────────────────────────
+async function processFiles() {
+  if (!selectedFiles.length) return;
+  const shortText = document.getElementById('shortText').value.trim();
+  if (!shortText) { showError("Short form text खाली है! पहले stamp text लिखें।"); return; }
+
+  const btn         = document.getElementById('applyBtn');
+  const progressBar = document.getElementById('progressBar');
+  const fill        = document.getElementById('progressFill');
+  btn.disabled = true;
+  progressBar.style.display = 'block';
+  fill.style.width = '0%';
+  document.getElementById('dlCard').classList.remove('show');
+  document.getElementById('dlLinks').innerHTML = '';
+  hideError();
+
+  const dlLinks = document.getElementById('dlLinks');
+  const results = [];
+
+  for (let i=0; i<selectedFiles.length; i++) {
+    const f = selectedFiles[i];
+    btn.textContent = `Processing ${i+1}/${selectedFiles.length}...`;
+    fill.style.width = Math.round((i/selectedFiles.length)*100)+'%';
+
+    try {
+      const isPDF = f.type==="application/pdf" || f.name.toLowerCase().endsWith(".pdf");
+      let result;
+      if (isPDF) {
+        result = await stampPdfFile(f);
+      } else {
+        result = await stampImageFile(f);
+      }
+      const baseName = f.name.replace(/\.[^.]+$/,"");
+      const outName  = `${baseName}_stamped.${result.ext}`;
+      const url      = URL.createObjectURL(result.blob);
+      results.push({ url, name: outName, mime: result.mime });
+    } catch(err) {
+      showError(`"${f.name}" में error: ${err.message}`);
+      console.error(err);
+    }
+  }
+
+  fill.style.width = '100%';
+  btn.textContent  = '✅ Done! फिर से Apply करें';
+  btn.disabled     = false;
+
+  if (results.length) {
+    results.forEach(r => {
+      const isPdf = r.mime==="application/pdf";
+      const typeTag = isPdf
+        ? `<span class="dl-type dl-type-pdf">PDF</span>`
+        : `<span class="dl-type dl-type-img">${r.name.split('.').pop().toUpperCase()}</span>`;
+      const a = document.createElement('a');
+      a.className = 'dl-link';
+      a.href = r.url; a.download = r.name;
+      a.innerHTML = `<span style="font-size:20px">${isPdf?"📄":"🖼️"}</span><span class="dl-name">${r.name}${typeTag}</span><span class="dl-label">⬇ Download</span>`;
+      dlLinks.appendChild(a);
+    });
+    document.getElementById('dlCard').classList.add('show');
+    document.getElementById('dlCard').scrollIntoView({behavior:'smooth'});
+  }
+}
+
+// Init
+drawPreview();
+</script>
+</body>
+</html>
